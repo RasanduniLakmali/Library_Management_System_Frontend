@@ -55,11 +55,20 @@ This is the **frontend** part of the system, built with **React**, **TypeScript*
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/RasanduniLakmali/Library_Management_System_Frontend.git
+```
 
+### 2. Install dependencies
+```bash
 npm install
+```
 
+### 3. Configure environment variables
+```bash
 VITE_API_BASE_URL=http://localhost:5000/api
+```
 
+### 4. Run the development server
+```bash
 npm run dev
 App will run on: http://localhost:5173
 
