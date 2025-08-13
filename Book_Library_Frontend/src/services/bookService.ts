@@ -10,7 +10,8 @@ export const addBooks = async (booksData:Omit<Book,"_id">) : Promise<Book> => {
 }
 
 export const updateBooks = async (_id:string, booksData:Omit<Book, "_id">) : Promise<Book> => {
-    const response = await apiClient.put(`/book/${_id}`,booksData);
+    console.log(booksData)
+    const response = await apiClient.put(`/book/update/${_id}`,booksData);
     return response.data;
 }
 

@@ -99,7 +99,8 @@ const BookForm = ({ book, onSubmit }: BookFormProps) => {
         if (validateForm()) {
             onSubmit({
                 ...formData,
-                publicationYear: formData.publicationYear.trim(), // keep as string
+                publicationYear: String(formData.publicationYear).trim(),
+
             });
         }
     };

@@ -11,9 +11,8 @@ import {
 import axios from "axios";
 import Dialog from "../components/Dialog.tsx";
 import BookForm from "../components/forms/BookForm.tsx";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import Swal from "sweetalert2";
-
 
 const BooksPage: React.FC = () => {
 
@@ -70,7 +69,6 @@ const BooksPage: React.FC = () => {
 
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [, setSelectedCustomer] = useState<Book | null>(null)
     const [, setIsLoading] = useState<boolean>(false)
 
@@ -96,15 +94,17 @@ const BooksPage: React.FC = () => {
                     prev.map((book) => (book._id === selectedBook._id ? updatedBook : book))
                 )
 
-                Swal.fire("Book Updated Successfully!");
+                displayBooks()
+
+                toast.success("Book Updated Successfully!");
 
                 setIsEditDialogOpen(false)
+
             } catch (error) {
                 if (axios.isAxiosError(error)) {
 
-                    Swal.fire("Book Not Updated !");
 
-                    toast.error(error.message)
+                    toast.error("Book Not Updated !")
                 } else {
                     toast.error("Something went wrong")
                 }
@@ -114,16 +114,17 @@ const BooksPage: React.FC = () => {
                 const newBook = await addBooks(bookData)
                 setBooks((prev) => [...prev, newBook])
 
-                Swal.fire("Book Added Successfully!");
+                displayBooks()
+
+                toast.success("Book Added Successfully!");
 
                 setIsAddDialogOpen(false)
 
             } catch (error) {
                 if (axios.isAxiosError(error)) {
 
-                    Swal.fire("Book Not Added !");
 
-                    toast.error(error.message)
+                    toast.error("Book Not Added !")
                 } else {
                     toast.error("Something went wrong")
                 }
@@ -135,16 +136,10 @@ const BooksPage: React.FC = () => {
 
     };
 
-    const handleDelete = (book: Book) => {
-        setSelectedBook(book);
-        setIsDeleteDialogOpen(true);
-    };
-
 
     const cancelDialog = () => {
         setIsAddDialogOpen(false)
         setIsEditDialogOpen(false)
-        setIsDeleteDialogOpen(false)
         setSelectedCustomer(null)
     }
 
@@ -174,32 +169,48 @@ const BooksPage: React.FC = () => {
         await deleteBooks(_id);
     }
 
-    const confirmDelete = async () => {
+    const confirmDelete = async (book: Book) => {
+        if (!book) return;
 
-        if (selectedBook) {
+        const result = await Swal.fire({
+            title: `Delete "${book.title}"?`,
+            text: "This action will permanently delete the book!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!",
+        });
 
-            try {
-                await deleteBookDetail(selectedBook._id)
+        if (!result.isConfirmed) return;
 
-                Swal.fire("Book Deleted Successfully!");
+        try {
+            // call your API to delete
+            deleteBookDetail(book._id);
 
-                displayBooks();
+            await Swal.fire({
+                title: "Deleted!",
+                text: "Book deleted successfully.",
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false,
+            });
 
-            } catch (error) {
-                if (axios.isAxiosError(error)) {
+            // refresh list
+            displayBooks();
 
-                    Swal.fire("Book Not Deleted !");
+        } catch (error) {
+            console.error("Delete error:", error);
 
-                    toast.error(error.message)
-                } else {
-                    toast.error("Deleting Book Failed!")
-                }
-            } finally {
-                setIsDeleteDialogOpen(false)
-                setSelectedCustomer(null)
-            }
+            await Swal.fire({
+                title: "Error",
+                text: axios.isAxiosError(error)
+                    ? (error.response?.data?.message || error.message)
+                    : "Unable to delete book",
+                icon: "error",
+            });
         }
-    }
+    };
 
     useEffect(() => {
         const fetchFilteredBooks = async () => {
@@ -366,7 +377,7 @@ const BooksPage: React.FC = () => {
                                             <span>Edit</span>
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(book)}
+                                            onClick={() => confirmDelete(book)}
                                             className="bg-gradient-to-r from-red-100 to-red-200 text-red-700 py-2 px-3 rounded-lg hover:from-red-200 hover:to-red-300 text-sm transition-all duration-300"
                                         >
                                             <Trash2 className="h-4 w-4"/>
@@ -425,7 +436,7 @@ const BooksPage: React.FC = () => {
                                                 <Edit3 className="h-4 w-4"/>
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(book)}
+                                                onClick={() => confirmDelete(book)}
                                                 className="text-red-600 hover:text-red-700 p-2 hover:bg-red-100 rounded-lg transition-all duration-300"
                                             >
                                                 <Trash2 className="h-4 w-4"/>
@@ -528,25 +539,6 @@ const BooksPage: React.FC = () => {
                     )}
                 </Dialog>
 
-                <Dialog
-                    isOpen={isDeleteDialogOpen}
-                    onCancel={cancelDialog}
-                    onConfirm={confirmDelete}
-                    title="Confirm Delete"
-                >
-                    <div className="flex items-center space-x-3 mb-4">
-                        <div className="bg-red-100 text-red-600 p-2 rounded-full">
-                            <Trash2 className="w-5 h-5"/>
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-gray-900">Delete Book</h3>
-                            <p className="text-sm text-gray-500">This action cannot be undone</p>
-                        </div>
-                    </div>
-                    <p className="text-gray-700">
-                        Are you sure you want to delete <strong className="text-gray-900">{selectedBook?.title}</strong>?
-                    </p>
-                </Dialog>
 
             </div>
 
