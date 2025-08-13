@@ -4,6 +4,7 @@ import Sidebar from "../components/SideBar.tsx";
 
 
 const AdminRoutes = () => {
+
     const {isLoggedIn} = UseAuth();
 
     if (!isLoggedIn) return <Navigate to='/login' />

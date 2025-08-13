@@ -12,6 +12,7 @@ const apiClient = axios.create({
     withCredentials: true
 })
 
+
 export const setHeader = (accessToken: string) => {
     if (accessToken !== ""){
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`
