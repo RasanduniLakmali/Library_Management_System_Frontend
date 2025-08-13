@@ -11,9 +11,8 @@ import {
     viewLendingByName
 } from "../services/lendingService.ts";
 import axios from "axios";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import Swal from "sweetalert2";
-
 
 const LendingPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -22,7 +21,6 @@ const LendingPage: React.FC = () => {
     const [selectLending,setSelectLending] = useState<Lending | null>(null)
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [, setLendings] = useState<Lending[]>([]);
     const [filteredLendings, setFilteredLendings] = useState<Lending[]>([]);
     const [, setIsLoading] = useState<boolean>(false)
@@ -38,7 +36,6 @@ const LendingPage: React.FC = () => {
     const cancelDialog = () => {
         setIsAddDialogOpen(false)
         setIsEditDialogOpen(false)
-        setIsDeleteDialogOpen(false)
         setSelectLending(null)
     }
 
@@ -68,17 +65,17 @@ const LendingPage: React.FC = () => {
                 setLendings((prev) =>
                     prev.map((lending) => (lending._id === selectLending._id ? updatedLending : lending))
                 );
+                displayLendings();
 
-                Swal.fire("Book Lending Updated Successfully!");
+               toast.success("Book Lending Updated Successfully!");
 
                 setIsEditDialogOpen(false);
 
             } catch (error) {
                 if (axios.isAxiosError(error)) {
 
-                    Swal.fire("Book Lending Update Failed!");
 
-                    toast.error(error.message);
+                    toast.error("Book Lending Update Failed!");
                 } else {
                     toast.error("Something went wrong");
                 }
@@ -90,15 +87,17 @@ const LendingPage: React.FC = () => {
                 const newLending = await lendingBooks(lendingPayload);
                 setLendings((prev) => [...prev, newLending]);
 
-                Swal.fire("Book Lending Successful!");
+                displayLendings();
+
+                toast.success("Book Lending Successful!");
 
                 setIsAddDialogOpen(false);
+
             } catch (error) {
                 if (axios.isAxiosError(error)) {
 
-                    Swal.fire("Book Lending Failed!");
 
-                    toast.error(error.message);
+                    toast.error("Book Lending Failed!");
                 } else {
                     toast.error("Something went wrong");
                 }
@@ -137,38 +136,44 @@ const LendingPage: React.FC = () => {
         await deleteLending(_id);
     }
 
-    const handleDelete = (lending: Lending) => {
-        setSelectLending(lending);
-        setIsDeleteDialogOpen(true);
-    };
 
-    const confirmDelete = async() => {
+    const confirmDelete = async (lending: Lending) => {
+        if (!lending) return;
 
-        if (selectLending) {
+        const result = await Swal.fire({
+            title: "Delete this lending record?",
+            text: "This action will permanently remove the lending record!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!",
+        });
 
-            try {
-                await deleteLendingDetail(selectLending._id)
+        if (!result.isConfirmed) return;
 
-                Swal.fire("Book Lending Deleted Successfully!");
+        try {
+            await deleteLendingDetail(lending._id);
 
-                displayLendings();
+            await Swal.fire({
+                title: "Deleted!",
+                text: "Book lending deleted successfully.",
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false,
+            });
 
-            }catch (error){
-                if (axios.isAxiosError(error)){
-
-                    Swal.fire("Book Lending Not Deleted!");
-
-                    toast.error(error.message)
-                }else {
-                    toast.error("Deleting Lending Failed!")
-                }
-            }
-            finally {
-                setIsDeleteDialogOpen(false)
-                setSelectLending(null)
-            }
+            displayLendings();
+        } catch (error) {
+            await Swal.fire({
+                title: "Error",
+                text: axios.isAxiosError(error)
+                    ? error.response?.data?.message || "Book lending not deleted!"
+                    : "Deleting lending failed!",
+                icon: "error",
+            });
         }
-    }
+    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -379,7 +384,7 @@ const LendingPage: React.FC = () => {
                                         <span>Edit</span>
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(lending)}
+                                        onClick={() => confirmDelete(lending)}
                                         className="flex items-center justify-center px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl border-2 border-red-200 hover:border-red-300 transition-all duration-300">
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -559,17 +564,6 @@ const LendingPage: React.FC = () => {
                 >
                     <LendingForm lending={selectLending} onSubmit={handleSubmit} />
 
-                </Dialog>
-
-                <Dialog
-                    isOpen={isDeleteDialogOpen}
-                    onCancel={cancelDialog}
-                    onConfirm={confirmDelete}
-                    title="Confirm Delete"
-                >
-                    <p className="text-gray-700">
-                        Are you sure you want to delete <strong>{selectLending?.readerName}</strong>?
-                    </p>
                 </Dialog>
 
             </div>

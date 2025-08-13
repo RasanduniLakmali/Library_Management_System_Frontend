@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {AlertTriangle, Mail, User, Book, Calendar, Clock, Search} from 'lucide-react';
 import {getOverdueReadersWithEmail, type OverdueReaderInfo, viewAllOverDues} from "../services/overDueService.ts";
 import type {Lending} from "../types/Lending.ts";
-
+import { toast } from "react-toastify";
 
 const OverdueManagement: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -42,8 +42,17 @@ const OverdueManagement: React.FC = () => {
                     books: booksForReader
                 })
             });
-            alert("Notification sent!");
+
+            toast.success("Email sent Successfully!");
+
+            // ✅ Remove the reader from overdueReader list
+            setOverdueReader(prev => prev.filter(r => r.email !== reader.email));
+
+            // ✅ Remove their lending records from overdueData
+            setOverdueData(prev => prev.filter(o => o.readerName !== reader.name));
+
         } catch (error) {
+            toast.error("Failed to send email!");
             console.error("Failed to send email:", error);
         }
     };

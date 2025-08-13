@@ -93,10 +93,17 @@ const LendingForm = ( {lending, onSubmit} : LendingFormProps) => {
 
             if (name === "borrowDate") {
                 const borrowDate = new Date(value);
-                const dueDate = new Date(borrowDate);
-                dueDate.setDate(borrowDate.getDate() + 5);
 
-                updatedFormData.dueDate = dueDate.toISOString().slice(0, 10);
+
+                if (!isNaN(borrowDate.getTime())) {
+                    const dueDate = new Date(borrowDate);
+                    dueDate.setDate(borrowDate.getDate() + 5);
+
+                    updatedFormData.dueDate = dueDate.toISOString().slice(0, 10);
+                } else {
+
+                    updatedFormData.dueDate = "";
+                }
             }
 
             return updatedFormData;
