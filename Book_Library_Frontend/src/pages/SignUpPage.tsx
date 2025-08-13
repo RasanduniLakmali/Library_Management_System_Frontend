@@ -2,7 +2,7 @@ import { Eye,Mail, Lock, User} from 'lucide-react';
 import {useState} from "react";
 import {signUpUser} from "../services/authService.ts";
 import {Link} from "react-router-dom";
-import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 
 
 interface FormData {
@@ -89,23 +89,13 @@ const  Signup = () => {
 
                 const response = await signUpUser(user);
 
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Your Account Created Successfully!.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
+                toast.success('Your Account Created Successfully!.')
+
                 console.log("Signup success:", response);
 
             } catch (error) {
 
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Your Account Created Error!.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-
+                toast.error('Your Account Created Error!.')
 
                 console.error("Signup error:", error);
 

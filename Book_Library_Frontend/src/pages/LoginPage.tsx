@@ -2,10 +2,9 @@ import { Eye, Mail, Lock, LogIn } from 'lucide-react';
 import {UseAuth} from "../context/UseAuth.ts";
 import {useState} from "react";
 import {loginUser} from "../services/authService.ts";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import {Link, useNavigate} from "react-router-dom";
 
-import Swal from "sweetalert2";
 
 
 interface FormData {
@@ -70,25 +69,17 @@ const Login = () => {
                 localStorage.setItem("accessToken", loginResponse.accessToken);
 
                 if( loginResponse !== null){
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Your Login Successful!.',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
+
+                    toast.success("Login Successfully!", {
+                        position: "top-center"
                     });
-                    toast.success("Login successfully")
                     login(loginResponse.accessToken)
                     navigate("/dashboard")
                 }
 
                 console.log(loginResponse)
             }catch(error){
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Your Login Unsuccessful!.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
+                toast.error("Login Unsuccessful")
                 console.log(error)
             }
         }
@@ -100,7 +91,7 @@ const Login = () => {
             ...prev,
             [name]: value,
         }))
-        // Clear error when user starts typing
+
         if (errors[name as keyof FormErrors]) {
             setErrors((prev) => ({
                 ...prev,
@@ -111,6 +102,8 @@ const Login = () => {
 
 
     return (
+        <>
+
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
             {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden">
@@ -126,10 +119,10 @@ const Login = () => {
                     <p className="text-gray-600">Welcome back, sign in to your account</p>
                 </div>
 
-                {/* Main Form Card */}
+
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
                     <form className="space-y-6" onSubmit={handleSubmit}>
-                        {/* Email Field */}
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Email Address
@@ -149,7 +142,7 @@ const Login = () => {
                             </div>
                         </div>
 
-                        {/* Password Field */}
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Password
@@ -222,6 +215,7 @@ const Login = () => {
 
             </div>
         </div>
+        </>
     );
 }
 

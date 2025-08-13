@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import type {User} from "../types/User.ts";
 import {getUserProfile, updatePassword, updateUserProfile} from "../services/authService.ts";
+import { toast } from "react-toastify";
 
 const UserProfile: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
@@ -36,6 +37,7 @@ const UserProfile: React.FC = () => {
             const updatedUser = await updateUserProfile(accessToken, editForm);
             setUser(updatedUser);
             setIsEditing(false);
+            toast.success("User updated successfully.");
         } catch (err) {
             console.error("Failed to update profile:", err);
             setError("Failed to save changes");
@@ -77,14 +79,15 @@ const UserProfile: React.FC = () => {
 
 
 
-    const getRoleColor = (role: string) => {
-        switch (role.toLowerCase()) {
+    const getRoleColor = (role?: string) => {
+        switch (role?.toLowerCase()) {
             case 'admin': return 'bg-red-100 text-red-800 border-red-200';
             case 'librarian': return 'bg-purple-100 text-purple-800 border-purple-200';
             case 'member': return 'bg-blue-100 text-blue-800 border-blue-200';
             default: return 'bg-gray-100 text-gray-800 border-gray-200';
         }
     };
+
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div className="text-red-600">{error}</div>;
@@ -110,10 +113,16 @@ const UserProfile: React.FC = () => {
 
             setShowPasswordChange(false);
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            toast.success("Password updated successfully.");
             alert("Password changed successfully");
-        } catch (err: any) {
-            console.error(err);
-            setError(err.message);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                console.error(err);
+                setError(err.message);
+            } else {
+                console.error("Unexpected error", err);
+                setError("An unexpected error occurred");
+            }
         }
     };
 
