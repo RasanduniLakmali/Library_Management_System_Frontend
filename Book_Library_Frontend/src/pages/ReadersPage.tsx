@@ -4,7 +4,7 @@ import type {Reader} from "../types/Reader.ts";
 import Dialog from "../components/Dialog.tsx";
 
 import axios from "axios";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import {
     addReaders,
     deleteReaders,
@@ -21,7 +21,6 @@ const ReadersPage = () => {
     const [selectedReader, setSelectedReader] = useState<Reader | null>(null);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [, setReaders] = useState<Reader[]>([]);
     const [, setIsLoading] = useState<boolean>(false)
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -41,7 +40,6 @@ const ReadersPage = () => {
     const cancelDialog = () => {
         setIsAddDialogOpen(false)
         setIsEditDialogOpen(false)
-        setIsDeleteDialogOpen(false)
         setSelectedReader(null)
     }
 
@@ -53,16 +51,15 @@ const ReadersPage = () => {
                     prev.map((reader) => (reader._id === selectedReader._id ? updatedReader : reader))
                 )
 
-                Swal.fire("Reader Updated Successfully!");
+                toast.success("Reader Updated Successfully!")
+                console.log("Reader Updated Successfully!")
+                displayReaders()
 
                 setIsEditDialogOpen(false)
             } catch (error) {
                 if (axios.isAxiosError(error)) {
 
-                    Swal.fire("Reader Not Updated !");
-
-
-                    toast.error(error.message)
+                    toast.error("Reader Not Updated !")
                 } else {
                     toast.error("Something went wrong")
                 }
@@ -72,16 +69,16 @@ const ReadersPage = () => {
                 const newReader = await addReaders(readerData)
                 setReaders((prev) => [...prev, newReader])
 
-                Swal.fire("Reader Added Successfully!");
+                displayReaders()
+
+                toast.success("Reader Added Successfully!");
 
                 setIsAddDialogOpen(false)
 
             } catch (error) {
                 if (axios.isAxiosError(error)) {
 
-                    Swal.fire("Reader Not Added !");
-
-                    toast.error(error.message)
+                    toast.error("Reader Not Added !")
                 } else {
                     toast.error("Something went wrong")
                 }
@@ -141,35 +138,45 @@ const ReadersPage = () => {
         await deleteReaders(_id);
     }
 
-    const handleDelete = (reader: Reader) => {
-        setSelectedReader(reader);
-        setIsDeleteDialogOpen(true);
+
+    const confirmDelete = async (reader: Reader) => {
+        if (!reader) return;
+
+        const result = await Swal.fire({
+            title: `Delete "${reader.name}"?`,
+            text: "This action will permanently delete the reader!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!",
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            await deleteReaderDetail(reader._id);
+
+            await Swal.fire({
+                title: "Deleted!",
+                text: "Reader deleted successfully.",
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false,
+            });
+
+            displayReaders();
+        } catch (error) {
+            await Swal.fire({
+                title: "Error",
+                text: axios.isAxiosError(error)
+                    ? error.response?.data?.message || error.message
+                    : "Deleting reader failed!",
+                icon: "error",
+            });
+        }
     };
 
-    const confirmDelete = async() => {
-        if (selectedReader) {
-            try {
-                await deleteReaderDetail(selectedReader._id)
-
-                Swal.fire("Reader Deleted Successfully!");
-
-                displayReaders();
-            }catch (error){
-                if (axios.isAxiosError(error)){
-
-                    Swal.fire("Reader Not Deleted!");
-
-                    toast.error(error.message)
-                }else {
-                    toast.error("Deleting Reader Failed!")
-                }
-            }
-            finally {
-                setIsDeleteDialogOpen(false)
-                setSelectedReader(null)
-            }
-        }
-    }
 
     const getInitials = (name: string) => {
         return name
@@ -245,7 +252,7 @@ const ReadersPage = () => {
                             <span>Edit</span>
                         </button>
                         <button
-                            onClick={() => handleDelete(reader)}
+                            onClick={() => confirmDelete(reader)}
                             className="bg-gradient-to-r from-red-100 to-red-200 text-red-700 py-2 px-3 rounded-lg hover:from-red-200 hover:to-red-300 text-sm transition-all duration-300"
                         >
                             <Trash2 className="h-4 w-4"/>
@@ -299,7 +306,7 @@ const ReadersPage = () => {
                             <Edit2 className="h-4 w-4"/>
                         </button>
                         <button
-                            onClick={() => handleDelete(reader)}
+                            onClick={() => confirmDelete(reader)}
                             className="text-red-600 hover:text-red-700 p-2 hover:bg-red-100 rounded-lg transition-all duration-300"
                         >
                             <Trash2 className="h-4 w-4"/>
@@ -514,25 +521,6 @@ const ReadersPage = () => {
                     <ReaderForm reader={selectedReader} onSubmit={handleSubmit} />
                 </Dialog>
 
-                <Dialog
-                    isOpen={isDeleteDialogOpen}
-                    onCancel={cancelDialog}
-                    onConfirm={confirmDelete}
-                    title="Confirm Delete"
-                >
-                    <div className="flex items-center space-x-3 mb-4">
-                        <div className="bg-red-100 text-red-600 p-2 rounded-full">
-                            <Trash2 className="w-5 h-5"/>
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-gray-900">Delete Reader</h3>
-                            <p className="text-sm text-gray-500">This action cannot be undone</p>
-                        </div>
-                    </div>
-                    <p className="text-gray-700">
-                        Are you sure you want to delete <strong className="text-gray-900">{selectedReader?.name}</strong>?
-                    </p>
-                </Dialog>
             </div>
         </div>
     );
