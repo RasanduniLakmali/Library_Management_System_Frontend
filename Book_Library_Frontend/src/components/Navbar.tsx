@@ -1,14 +1,17 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate,useLocation } from "react-router-dom"
 import {UseAuth} from "../context/UseAuth.ts";
 // import {logOutUser} from "../services/authService.ts";
 import toast from "react-hot-toast";
 import axios from "axios";
 
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   // const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation();
+  const currentPath = location.pathname;
   const {isLoggedIn, logout} = UseAuth()
 
   console.log(isLoggedIn)
@@ -83,7 +86,7 @@ const Navbar = () => {
                   </button>
               )}
 
-              {isLoggedIn && (
+              {isLoggedIn && currentPath !== "/login" && (
                   <>
                     <button
                         onClick={handleDashboard}
@@ -95,7 +98,11 @@ const Navbar = () => {
                       </svg>
                       <span>Dashboard</span>
                     </button>
+                    </>
+              )}
 
+              {isLoggedIn && currentPath !== "/login" && (
+                  <>
                     <button
                         onClick={handleLogout}
                         className='flex items-center space-x-2 bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 font-medium text-sm'
@@ -106,7 +113,8 @@ const Navbar = () => {
                       <span>Sign Out</span>
                     </button>
                   </>
-              )}
+                )}
+
             </div>
 
             {/* Mobile menu button */}
@@ -153,7 +161,11 @@ const Navbar = () => {
                       </svg>
                       <span>Dashboard</span>
                     </button>
+                    </>
+                  )}
 
+              {isLoggedIn && (
+                  <>
                     <button
                         onClick={handleLogout}
                         className='flex items-center space-x-3 w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-all duration-300 shadow-md font-medium'

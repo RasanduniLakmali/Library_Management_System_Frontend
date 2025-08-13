@@ -12,10 +12,9 @@ const Dialog = ({ isOpen, onCancel, onConfirm, children, title }: DialogProps) =
   if (!isOpen) return null
 
   return (
-      <div className='fixed inset-0 bg-gray-500 bg-opacity-30 flex items-center justify-center z-50'>
+      <div className="fixed inset-0 bg-purple-100 bg-opacity-50 flex items-center justify-center z-50">
 
-
-      <div className='bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[90vh] flex flex-col'>
+        <div className='bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[90vh] flex flex-col'>
         {title && (
           <div className='mb-4 flex-shrink-0'>
             <h2 className='text-xl font-semibold text-gray-800'>{title}</h2>

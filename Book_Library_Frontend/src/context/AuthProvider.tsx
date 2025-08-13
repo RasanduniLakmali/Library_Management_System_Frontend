@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setAccessToken(token)
     }
 
+
     const logout = () => setIsLoggedIn(false)
 
     useEffect(() => {
